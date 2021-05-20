@@ -1,0 +1,51 @@
+# Someone bought 1 pair of Men's size 9 shoes. Here we are getting Product variants with the same SKU,
+# excluding the Men's size 9 shoes. This would give us the product variants, and from these we could get
+# the inventory levels ids. We can use these inventory level ids in the next query.
+query {
+  productVariants(first:10 query:"sku:M9W10 AND NOT title:'US 9'") {
+    edges {
+      node {
+        id
+        displayName
+        title
+        sku
+    		inventoryItem {
+          inventoryLevels(first:10 query:"") {
+            edges{
+              node {
+                id
+                location {
+                  id
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+# We can use this query to adjust the stock level of an item at a specific location. We can use
+# the inventory level ids from the previous query as an input to this query.
+# Note that this query requires the query variables written below.
+mutation inventoryAdjustQuantity($input: InventoryAdjustQuantityInput!) {
+  inventoryAdjustQuantity(input: $input) {
+    inventoryLevel {
+      id
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}
+
+# Query variables
+#{
+#  "input": {
+#    "inventoryLevelId": "gid://shopify/InventoryLevel/97127301295?inventory_item_id=41931872436399",
+#    "availableDelta": -1
+#  }
+#}
